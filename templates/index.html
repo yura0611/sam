@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Hover Mask Demo</title>
+    <style>
+        #uploaded-image {
+            position: relative;
+            width: 1280px;
+        }
+
+        #mask {
+            position: absolute;
+            top: 0;
+            left: 1280px;
+            /* width: 1280px; */
+            /* height:720px; */
+            /* width:80%; */
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="uploaded-image-container">
+        <img id="uploaded-image" alt="Uploaded">
+        <img id="mask" src="" alt="Mask" style="display:none;">
+    </div>
+    <h1>Upload an Image and Hover to See Mask</h1>
+    <input type="file" id="file-input">
+
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const imgElement = document.getElementById('uploaded-image');
+                    imgElement.src = 'data:image/png;base64,' + data.base64;
+                    imgElement.style.display = 'block';
+                });
+        });
+
+        document.getElementById('uploaded-image').addEventListener('click', function (event) {
+            const rect = event.target.getBoundingClientRect();
+            // const x = event.clientX - rect.left;
+            // const y = event.clientY - rect.top;
+
+            const x = event.clientX;
+            const y = event.clientY;
+
+            console.log(event)
+
+            fetch('/mask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ x: x, y: y })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const maskElement = document.getElementById('mask');
+                    maskElement.src = 'data:image/png;base64,' + data.base64;
+                    maskElement.style.display = 'block';
+                });
+        });
+    </script>
+</body>
+
+</html>
